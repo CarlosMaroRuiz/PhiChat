@@ -44,6 +44,9 @@ print(response.content)
 print(response.tool_calls)
 ```
 
+> [!TIP]
+> Para una guía detallada sobre cómo integrar PhiChat con **LangGraph**, **MCP** y mejores prácticas de ingeniería, consulta nuestra [Guía de Integración Completa](INTEGRATION_GUIDE.md).
+
 ## Modelos recomendados
 
 | Modelo | Tamaño | Características |
@@ -102,7 +105,19 @@ Garantiza la integridad de los protocolos de comunicación y la ejecución agén
 ```bash
 # Ejecutar todos los tests
 uv run pytest
+
+# Ejecutar un test específico (ej. los parsers)
+uv run pytest test/test_parsers.py
 ```
+
+## Desarrollo con Skills (Phi Protocol)
+
+Este proyecto utiliza un sistema de **Skills** para estandarizar la ingeniería de software. Puedes encontrar la guía completa de operación en [skills/SKILL.md](skills/SKILL.md).
+
+### Mandato de Calidad
+Cualquier contribución debe cumplir con el **Protocolo Phi**:
+1.  **Verificación Total**: `uv run pytest`
+2.  **Estándares**: Adherencia estricta a PEP 8, 484 y 257.
 
 ---
 Desarrollado para optimizar el uso de modelos Microsoft Phi en entornos de producción con LangChain.
