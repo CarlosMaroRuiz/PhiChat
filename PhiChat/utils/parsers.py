@@ -25,12 +25,25 @@ def normalize_tool_call(c: dict[str, Any]) -> dict[str, Any] | None:
         or {}
     )
     
-    # Si los argumentos vienen como string (JSON), los parseamos
+    # Si los argumentos vienen como string (JSON), los limpiamos y parseamos
     if isinstance(raw_args, str):
+        # Limpieza agresiva de ruidos comunes en modelos pequeños
+        clean_args = raw_args.strip()
+        if clean_args.endswith("}}}"): clean_args = clean_args[:-2]
+        elif clean_args.endswith("}}"): clean_args = clean_args[:-1]
+        
         try:
-            args = json.loads(raw_args)
+            args = json.loads(clean_args)
         except:
-            args = {"raw_input": raw_args}
+            # Si falla el parseo de un string que parece JSON, intentamos extraer el primer objeto
+            obj_match = re.search(r"\{.*\}", clean_args, re.DOTALL)
+            if obj_match:
+                try:
+                    args = json.loads(obj_match.group(0))
+                except:
+                    args = {"raw_input": raw_args}
+            else:
+                args = {"raw_input": raw_args}
     else:
         args = raw_args
         
