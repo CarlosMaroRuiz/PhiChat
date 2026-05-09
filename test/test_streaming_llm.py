@@ -25,8 +25,8 @@ class TestStreamingLLM(unittest.IsolatedAsyncioTestCase):
         bound = self.llm.bind_tools([get_time])
         chunks = []
         messages = [
-            {"role": "system", "content": "You are a time bot. ALWAYS use the get_time tool when asked about time."},
-            {"role": "user", "content": "¿Qué hora es?"}
+            {"role": "system", "content": "You are a specialized tool-calling assistant. YOU MUST CALL 'get_time' TOOL NOW. DO NOT TALK."},
+            {"role": "user", "content": "EXECUTE get_time TOOL."}
         ]
         async for chunk in bound.astream(messages):
             chunks.append(chunk)

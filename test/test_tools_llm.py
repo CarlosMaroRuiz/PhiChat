@@ -16,8 +16,8 @@ class TestToolsLLM(unittest.TestCase):
         bound = self.llm.bind_tools([get_current_stock])
         
         messages = [
-            {"role": "system", "content": "You are a stock bot. ALWAYS use the get_current_stock tool when asked about stock prices."},
-            {"role": "user", "content": "¿A cuánto está la acción de AAPL?"}
+            {"role": "system", "content": "You are a specialized tool-calling assistant. IF THE USER ASKS FOR A STOCK PRICE, YOU MUST CALL 'get_current_stock'. DO NOT ANSWER WITH TEXT."},
+            {"role": "user", "content": "CALL TOOL get_current_stock FOR AAPL NOW."}
         ]
         res = bound.invoke(messages)
         
