@@ -253,7 +253,9 @@ result = llm.run_tool_loop(
 )
 ```
 
-> **Nota**: Para aplicaciones asíncronas (web/servidores), utiliza `await llm.arun_tool_loop(...)`.
+> **Nota**: Para aplicaciones asíncronas (web/servidores), utiliza `await llm.arun_tool_loop(...)`. Esta versión asíncrona ejecuta múltiples llamadas a herramientas en paralelo utilizando `asyncio.gather`, reduciendo drásticamente la latencia.
+>
+> **Soporte `return_direct`**: Si defines una herramienta con `return_direct=True` en `create_tool`, el bucle se interrumpirá inmediatamente después de ejecutarla y devolverá su resultado crudo, omitiendo la generación final del modelo.
 
 ---
 

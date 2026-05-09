@@ -64,6 +64,8 @@ llm = ChatPhi(model="phi4-mini:latest")
 
 *   **Bypass de Ollama 400**: Soluciona el error de "Native Tooling" mediante inyección manual de esquemas.
 *   **Normalización de Tool Calls**: Extrae y convierte el JSON de Phi-4 al formato estándar `tool_calls`.
+*   **Ejecución Paralela**: `arun_tool_loop` utiliza concurrencia nativa (`asyncio.gather`) para invocar múltiples herramientas simultáneamente.
+*   **Soporte return_direct**: Soporte nativo para herramientas que devuelven resultados crudos sin pasar de nuevo por el modelo.
 *   **Memoria Agéntica**: Re-inyección automática del historial para evitar bucles infinitos.
 *   **Salida Estructurada**: Soporte nativo para `with_structured_output` en modo JSON.
 *   **Streaming**: Filtrado de tokens de control (`<|tool_call|>`) para streams limpios.
