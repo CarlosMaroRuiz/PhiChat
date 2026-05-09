@@ -1,6 +1,6 @@
 import unittest
 from langchain_core.messages import AIMessage, SystemMessage
-from PhiChat.parsers import parse_phi4_tool_calls, inject_tool_system_message
+from PhiChat.utils import parse_phi4_tool_calls, inject_tool_system_message
 
 class TestParsers(unittest.TestCase):
     def test_parse_standard_phi4_tool_call(self):

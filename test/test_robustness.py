@@ -5,8 +5,9 @@ from typing import Any
 from unittest.mock import MagicMock, AsyncMock
 from langchain_core.messages import AIMessage, ToolMessage, HumanMessage
 from langchain_core.tools import BaseTool
-from PhiChat.parsers import parse_phi4_tool_calls
-from PhiChat.tools import run_tool_loop, arun_tool_loop, _extract_inline_tool_calls
+from PhiChat.utils import parse_phi4_tool_calls
+from PhiChat.tools import run_tool_loop, arun_tool_loop
+from PhiChat.tools.loops import _extract_inline_tool_calls
 
 class RobustnessTests(unittest.TestCase):
     def test_parse_malformed_json_partial_recovery(self):

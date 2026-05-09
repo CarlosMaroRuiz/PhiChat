@@ -27,7 +27,7 @@ class TestStructuredOutput(unittest.TestCase):
         """
         Prueba que el parser reconozca diferentes variantes de llaves de argumentos.
         """
-        from PhiChat.parsers import parse_phi4_tool_calls
+        from PhiChat.utils import parse_phi4_tool_calls
         
         # Variantes comunes que los modelos generan
         variants = [

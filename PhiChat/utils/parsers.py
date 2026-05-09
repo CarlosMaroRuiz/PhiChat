@@ -10,22 +10,43 @@ from PhiChat.constants import _PHI4_TOOL_SYSTEM_SUFFIX, _TOOL_CALL_PATTERNS
 
 from typing import Any
 
+def normalize_tool_call(c: dict[str, Any]) -> dict[str, Any] | None:
+    """Normaliza un dict de llamada a herramienta al formato estandar de LangChain."""
+    name = str(c.get("name") or c.get("type") or c.get("function", {}).get("name", ""))
+    if not name:
+        return None
+    
+    raw_args = (
+        c.get("arguments")
+        or c.get("args")
+        or c.get("parameters")
+        or c.get("function", {}).get("arguments", {})
+        or c.get("function", {}).get("args", {})
+        or {}
+    )
+    
+    # Si los argumentos vienen como string (JSON), los parseamos
+    if isinstance(raw_args, str):
+        try:
+            args = json.loads(raw_args)
+        except:
+            args = {"raw_input": raw_args}
+    else:
+        args = raw_args
+        
+    return {
+        "name": name,
+        "args": args if isinstance(args, dict) else {"value": args},
+        "id": str(c.get("id") or f"call_{uuid.uuid4().hex[:8]}"),
+    }
+
 def parse_phi4_tool_calls(response: AIMessage) -> list[dict[str, Any]]:
     """
     Extrae llamadas a herramientas (tool calls) del contenido del mensaje.
-    
-    Esta funcion es necesaria cuando el modelo phi4-mini genera las llamadas
-    como texto plano con etiquetas en lugar de usar el campo nativo de Ollama.
-    
-    Args:
-        response: El objeto AIMessage devuelto por el modelo.
-        
-    Returns:
-        Una lista de diccionarios con el formato estandar de LangChain: 
-        {"name": str, "args": dict, "id": str}.
     """
     if response.tool_calls:
-        return list(response.tool_calls)
+        results = [normalize_tool_call(tc) for tc in response.tool_calls]
+        return [r for r in results if r is not None]
 
     content = response.content or ""
     if not content:
@@ -37,9 +58,6 @@ def parse_phi4_tool_calls(response: AIMessage) -> list[dict[str, Any]]:
             continue
         
         raw_str = match.group(1).strip()
-        
-        # --- REPARADOR INTELIGENTE DE JSON (v0.1.6) ---
-        # Los modelos pequeños suelen fallar al cerrar el array o ponen llaves de mas (ej. }}} )
         
         def try_parse(s: str) -> list[dict] | None:
             try:
@@ -53,15 +71,10 @@ def parse_phi4_tool_calls(response: AIMessage) -> list[dict[str, Any]]:
         
         # Intento 2: Si no termina en ], intentamos cerrar el array y posibles objetos internos
         if not calls:
-            # Quitamos cualquier corchete o espacio residual al final para reconstruir
             clean_str = raw_str.strip()
             if clean_str.endswith("]"):
                 clean_str = clean_str[:-1].strip()
-            if clean_str.endswith("}"):
-                # Si ya termina en }, podria faltar otra } o el ]
-                pass 
             
-            # Intentamos varias combinaciones de cierre forzado
             for suffix in ["]", "}]", "}}]"]:
                 calls = try_parse(clean_str + suffix)
                 if calls: break
@@ -70,7 +83,6 @@ def parse_phi4_tool_calls(response: AIMessage) -> list[dict[str, Any]]:
         if not calls:
             for i in range(len(raw_str), 0, -1):
                 sub = raw_str[:i].strip()
-                # Probamos cerrar desde cualquier punto que parezca el fin de un valor
                 for suffix in ["]", "}]", "}}]"]:
                     res = try_parse(sub + suffix)
                     if res:
@@ -82,22 +94,8 @@ def parse_phi4_tool_calls(response: AIMessage) -> list[dict[str, Any]]:
             continue
 
         try:
-            return [
-                {
-                    "name": str(c.get("name") or c.get("type") or c.get("function", {}).get("name", "")),
-                    "args": (
-                        c.get("arguments")
-                        or c.get("args")
-                        or c.get("parameters")
-                        or c.get("function", {}).get("arguments", {})
-                        or c.get("function", {}).get("args", {})
-                        or {}
-                    ),
-                    "id": str(c.get("id") or f"call_{uuid.uuid4().hex[:8]}"),
-                }
-                for c in calls
-                if c.get("name") or c.get("type") or c.get("function", {}).get("name")
-            ]
+            results = [normalize_tool_call(c) for c in calls]
+            return [r for r in results if r is not None]
         except Exception:
             continue
 

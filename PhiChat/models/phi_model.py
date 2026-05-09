@@ -14,7 +14,7 @@ from langchain_ollama import ChatOllama
 from pydantic import BaseModel, Field, PrivateAttr
 
 from PhiChat.constants import _PHI4_TOOL_SYSTEM_SUFFIX, _TOOL_CALL_PATTERNS
-from PhiChat.parsers import inject_tool_system_message, parse_phi4_tool_calls
+from PhiChat.utils.parsers import inject_tool_system_message, parse_phi4_tool_calls
 
 
 class ChatPhi(BaseChatModel):
@@ -118,10 +118,13 @@ class ChatPhi(BaseChatModel):
         if self._bound_tools:
             effective_stop += ["<|/tool_call|>", "<|/tool_calls|>"]
 
-        response: AIMessage = self._ollama.invoke(
+        # _generate devuelve un ChatResult
+        chat_result = self._ollama._generate(
             self._patch_messages(messages),
             stop=effective_stop or None,
+            run_manager=None,
         )
+        response = chat_result.generations[0].message
         normalized = self._normalize_static(response)
         return ChatResult(generations=[ChatGeneration(message=normalized)])
 
@@ -141,12 +144,15 @@ class ChatPhi(BaseChatModel):
         full_content = ""
         in_tool_call = False
 
-        for chunk in self._ollama.stream(
+        for chunk in self._ollama._stream(
             self._patch_messages(messages),
             stop=effective_stop or None,
+            run_manager=None,
         ):
-            raw_chunks.append(chunk)
-            content = chunk.content or ""
+            # En _stream nativo, el chunk es de tipo ChatGenerationChunk
+            msg_chunk = chunk.message
+            raw_chunks.append(msg_chunk)
+            content = msg_chunk.content or ""
             full_content += content
 
             # Detección robusta: si ya detectamos que estamos en una tool call, paramos de emitir.
@@ -160,9 +166,7 @@ class ChatPhi(BaseChatModel):
                 # acumulado parecen el inicio de una etiqueta, no emitimos.
                 potential_tags = ("<", "<|", "<|t", "<|to", "<|too", "<|tool", "func", "functools")
                 if not any(full_content.endswith(p) for p in potential_tags):
-                    yield ChatGenerationChunk(message=chunk)
-                    if run_manager:
-                        run_manager.on_llm_new_token(content, chunk=chunk)
+                    yield chunk
 
         # Post-proceso final: detecta tool calls en el contenido completo acumulado
         normalized = self._normalize_static(AIMessage(content=full_content))
@@ -197,12 +201,15 @@ class ChatPhi(BaseChatModel):
         full_content = ""
         in_tool_call = False
 
-        async for chunk in self._ollama.astream(
+        async for chunk in self._ollama._astream(
             self._patch_messages(messages),
             stop=effective_stop or None,
+            run_manager=None,
         ):
-            raw_chunks.append(chunk)
-            content = chunk.content or ""
+            # En _astream nativo, el chunk es de tipo ChatGenerationChunk
+            msg_chunk = chunk.message
+            raw_chunks.append(msg_chunk)
+            content = msg_chunk.content or ""
             full_content += content
 
             if not in_tool_call:
@@ -210,10 +217,9 @@ class ChatPhi(BaseChatModel):
                     in_tool_call = True
             
             if not in_tool_call:
-                if not any(full_content.endswith(p) for p in ("<", "<|", "<|tool", "func", "functools")):
-                    yield ChatGenerationChunk(message=chunk)
-                    if run_manager:
-                        await run_manager.on_llm_new_token(content, chunk=chunk)
+                potential_tags = ("<", "<|", "<|t", "<|to", "<|too", "<|tool", "func", "functools")
+                if not any(full_content.endswith(p) for p in potential_tags):
+                    yield chunk
 
         normalized = self._normalize_static(AIMessage(content=full_content))
         if normalized.tool_calls:
