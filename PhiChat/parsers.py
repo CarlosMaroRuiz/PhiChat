@@ -51,22 +51,32 @@ def parse_phi4_tool_calls(response: AIMessage) -> list[dict[str, Any]]:
         # Intento 1: Tal cual viene
         calls = try_parse(raw_str)
         
-        # Intento 2: Si no termina en ], intentamos cerrar el array
-        if not calls and not raw_str.endswith("]"):
-            calls = try_parse(raw_str + "]")
-            if not calls:
-                calls = try_parse(raw_str + "}]")
+        # Intento 2: Si no termina en ], intentamos cerrar el array y posibles objetos internos
+        if not calls:
+            # Quitamos cualquier corchete o espacio residual al final para reconstruir
+            clean_str = raw_str.strip()
+            if clean_str.endswith("]"):
+                clean_str = clean_str[:-1].strip()
+            if clean_str.endswith("}"):
+                # Si ya termina en }, podria faltar otra } o el ]
+                pass 
+            
+            # Intentamos varias combinaciones de cierre forzado
+            for suffix in ["]", "}]", "}}]"]:
+                calls = try_parse(clean_str + suffix)
+                if calls: break
 
-        # Intento 3: Si tiene "basura" al final (como llaves extra }}) 
-        # Buscamos el ultimo cierre coherente
+        # Intento 3: Busqueda regresiva agresiva
         if not calls:
             for i in range(len(raw_str), 0, -1):
                 sub = raw_str[:i].strip()
-                if sub.endswith("}"):
-                    res = try_parse(sub + "]")
+                # Probamos cerrar desde cualquier punto que parezca el fin de un valor
+                for suffix in ["]", "}]", "}}]"]:
+                    res = try_parse(sub + suffix)
                     if res:
                         calls = res
                         break
+                if calls: break
         
         if not calls:
             continue

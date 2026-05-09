@@ -6,8 +6,9 @@ _PHI4_TOOL_SYSTEM_SUFFIX = (
 )
 
 _TOOL_CALL_PATTERNS = [
-    re.compile(r"<\|tool_calls?\|>\s*(\[.*?\])\s*(?:<\|/tool_calls?\|>|$)", re.DOTALL),
-    re.compile(r"<\|tool_call\|>\s*(\[.*?\])\s*(?:<\|/tool_call\|>|$)", re.DOTALL),
-    re.compile(r"functools\s*(\[.*?\])", re.DOTALL),
-    re.compile(r"(\[\s*\{.*?(?:\"name\"|\"type\"|\"args\"|\"arguments\").*?\}\s*\])", re.DOTALL),
+    re.compile(r"<\|tool_calls?\|>\s*(\[.*?(?:\]|$))\s*(?:<\|/tool_calls?\|>|$)", re.DOTALL),
+    re.compile(r"<\|tool_call\|>\s*(\[.*?(?:\]|$))\s*(?:<\|/tool_call\|>|$)", re.DOTALL),
+    re.compile(r"functools\s*(\[.*?(?:\]|$))", re.DOTALL),
+    # Captura mas agresiva de cualquier bloque que empiece con [ {
+    re.compile(r"(\[\s*\{.*(?:\"name\"|\"arguments\").*)", re.DOTALL),
 ]

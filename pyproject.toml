@@ -1,6 +1,6 @@
 [project]
 name = "phichat"
-version = "0.1.6"
+version = "0.1.7"
 description = "Wrapper de LangChain para Phi-4 con soporte nativo de Tool Calling y MCP"
 readme = "README.md"
 requires-python = ">=3.11"
