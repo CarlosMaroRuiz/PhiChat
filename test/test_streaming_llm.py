@@ -24,7 +24,11 @@ class TestStreamingLLM(unittest.IsolatedAsyncioTestCase):
         
         bound = self.llm.bind_tools([get_time])
         chunks = []
-        async for chunk in bound.astream("¿Qué hora es?"):
+        messages = [
+            {"role": "system", "content": "You are a time bot. ALWAYS use the get_time tool when asked about time."},
+            {"role": "user", "content": "¿Qué hora es?"}
+        ]
+        async for chunk in bound.astream(messages):
             chunks.append(chunk)
             if chunk.content:
                 self.assertNotIn("<|tool_call|>", chunk.content)

@@ -14,7 +14,12 @@ class TestToolsLLM(unittest.TestCase):
             return f"El precio de {ticker} es 150.00"
         
         bound = self.llm.bind_tools([get_current_stock])
-        res = bound.invoke("¿A cuánto está la acción de AAPL?")
+        
+        messages = [
+            {"role": "system", "content": "You are a stock bot. ALWAYS use the get_current_stock tool when asked about stock prices."},
+            {"role": "user", "content": "¿A cuánto está la acción de AAPL?"}
+        ]
+        res = bound.invoke(messages)
         
         self.assertTrue(len(res.tool_calls) > 0)
         self.assertEqual(res.tool_calls[0]["name"], "get_current_stock")
