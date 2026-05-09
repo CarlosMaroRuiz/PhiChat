@@ -38,18 +38,40 @@ def parse_phi4_tool_calls(response: AIMessage) -> list[dict[str, Any]]:
         
         raw_str = match.group(1).strip()
         
-        # Intento de reparacion de JSON para modelos pequeños (phi4-mini)
-        if not raw_str.endswith("]"):
-            # Si termina en }}}, probablemente le falta el ]
-            if raw_str.endswith("}"):
-                raw_str += "]"
-            # Si esta muy roto, intentamos forzar el cierre del array
-            elif not raw_str.endswith("]"):
-                raw_str += "}]"
+        # --- REPARADOR INTELIGENTE DE JSON (v0.1.6) ---
+        # Los modelos pequeños suelen fallar al cerrar el array o ponen llaves de mas (ej. }}} )
+        
+        def try_parse(s: str) -> list[dict] | None:
+            try:
+                data = json.loads(s)
+                return data if isinstance(data, list) else [data]
+            except:
+                return None
+
+        # Intento 1: Tal cual viene
+        calls = try_parse(raw_str)
+        
+        # Intento 2: Si no termina en ], intentamos cerrar el array
+        if not calls and not raw_str.endswith("]"):
+            calls = try_parse(raw_str + "]")
+            if not calls:
+                calls = try_parse(raw_str + "}]")
+
+        # Intento 3: Si tiene "basura" al final (como llaves extra }}) 
+        # Buscamos el ultimo cierre coherente
+        if not calls:
+            for i in range(len(raw_str), 0, -1):
+                sub = raw_str[:i].strip()
+                if sub.endswith("}"):
+                    res = try_parse(sub + "]")
+                    if res:
+                        calls = res
+                        break
+        
+        if not calls:
+            continue
 
         try:
-            raw = json.loads(raw_str)
-            calls = raw if isinstance(raw, list) else [raw]
             return [
                 {
                     "name": str(c.get("name") or c.get("type") or c.get("function", {}).get("name", "")),
@@ -66,8 +88,7 @@ def parse_phi4_tool_calls(response: AIMessage) -> list[dict[str, Any]]:
                 for c in calls
                 if c.get("name") or c.get("type") or c.get("function", {}).get("name")
             ]
-        except (json.JSONDecodeError, AttributeError):
-            # Si falla el parseo estandar, intentamos una extraccion mas agresiva si es necesario
+        except Exception:
             continue
 
     return []

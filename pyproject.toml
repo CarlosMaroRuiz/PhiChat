@@ -1,6 +1,6 @@
 [project]
 name = "phichat"
-version = "0.1.4"
+version = "0.1.6"
 description = "Wrapper de LangChain para Phi-4 con soporte nativo de Tool Calling y MCP"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -9,6 +9,7 @@ dependencies = [
     "langchain-core>=0.3.0",
     "langchain-mcp-adapters>=0.2.2",
     "mcp>=1.27.0",
+    "langgraph>=0.2.0",
     "pydantic>=2.0.0",
     "nest-asyncio>=1.6.0", 
 ]
