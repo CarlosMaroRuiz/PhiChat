@@ -150,14 +150,16 @@ class ChatPhi(BaseChatModel):
             full_content += content
 
             # Detección robusta: si ya detectamos que estamos en una tool call, paramos de emitir.
-            # También paramos si el contenido acumulado parece el inicio de una etiqueta.
             if not in_tool_call:
-                if any(tag in full_content for tag in ("<|tool_call", "functools[")):
+                # Comprobación de contenido completo para detectar etiquetas en medio de un chunk
+                if any(tag in full_content for tag in ("<|tool_call", "<|tool_calls", "functools[")):
                     in_tool_call = True
             
             if not in_tool_call:
-                # Evitamos yieldar prefijos de etiquetas (como "<|") que podrían ser parte de una tool call
-                if not any(full_content.endswith(p) for p in ("<", "<|", "<|tool", "func", "functools")):
+                # Filtrado preventivo de prefijos: si el chunk actual o el final del contenido 
+                # acumulado parecen el inicio de una etiqueta, no emitimos.
+                potential_tags = ("<", "<|", "<|t", "<|to", "<|too", "<|tool", "func", "functools")
+                if not any(full_content.endswith(p) for p in potential_tags):
                     yield ChatGenerationChunk(message=chunk)
                     if run_manager:
                         run_manager.on_llm_new_token(content, chunk=chunk)

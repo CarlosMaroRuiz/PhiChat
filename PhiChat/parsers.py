@@ -35,12 +35,24 @@ def parse_phi4_tool_calls(response: AIMessage) -> list[dict[str, Any]]:
         match = pattern.search(content)
         if not match:
             continue
+        
+        raw_str = match.group(1).strip()
+        
+        # Intento de reparacion de JSON para modelos pequeños (phi4-mini)
+        if not raw_str.endswith("]"):
+            # Si termina en }}}, probablemente le falta el ]
+            if raw_str.endswith("}"):
+                raw_str += "]"
+            # Si esta muy roto, intentamos forzar el cierre del array
+            elif not raw_str.endswith("]"):
+                raw_str += "}]"
+
         try:
-            raw = json.loads(match.group(1))
+            raw = json.loads(raw_str)
             calls = raw if isinstance(raw, list) else [raw]
             return [
                 {
-                    "name": c.get("name") or c.get("type") or c.get("function", {}).get("name", ""),
+                    "name": str(c.get("name") or c.get("type") or c.get("function", {}).get("name", "")),
                     "args": (
                         c.get("arguments")
                         or c.get("args")
@@ -49,12 +61,13 @@ def parse_phi4_tool_calls(response: AIMessage) -> list[dict[str, Any]]:
                         or c.get("function", {}).get("args", {})
                         or {}
                     ),
-                    "id": c.get("id") or f"call_{uuid.uuid4().hex[:8]}",
+                    "id": str(c.get("id") or f"call_{uuid.uuid4().hex[:8]}"),
                 }
                 for c in calls
                 if c.get("name") or c.get("type") or c.get("function", {}).get("name")
             ]
         except (json.JSONDecodeError, AttributeError):
+            # Si falla el parseo estandar, intentamos una extraccion mas agresiva si es necesario
             continue
 
     return []
