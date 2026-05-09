@@ -5,7 +5,8 @@ from PhiChat import ChatPhi
 
 class TestBasicLLM(unittest.TestCase):
     def setUp(self):
-        self.llm = ChatPhi(model="phi4", temperature=0)
+        model = os.getenv("TEST_MODEL", "phi4")
+        self.llm = ChatPhi(model=model, temperature=0)
 
     def test_invoke(self):
         res = self.llm.invoke("Di la palabra 'QUESO' únicamente.")
@@ -13,7 +14,7 @@ class TestBasicLLM(unittest.TestCase):
 
     def test_identifying_params(self):
         params = self.llm._identifying_params
-        self.assertEqual(params["model"], "phi4")
+        self.assertEqual(params["model"], self.llm.model)
 
 if __name__ == "__main__":
     

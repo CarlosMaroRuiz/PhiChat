@@ -1,5 +1,10 @@
 # Historial de Cambios (Changelog) — PhiChat
 
+## [0.2.4] - 2026-05-09
+### Añadido
+- **Optimización de Memoria en CI**: Los tests en GitHub Actions ahora usan `phi3:mini` para evitar errores de RAM (OOM), asegurando que el pipeline siempre esté en verde.
+- **Modelos Dinámicos en Tests**: Implementación de `TEST_MODEL` vía variables de entorno para permitir el uso de diferentes modelos entre local y CI.
+
 ## [0.2.2] - 2026-05-09
 ### Añadido
 - **CI/CD con GitHub Actions**: Implementación de tests automáticos en cada push usando contenedores de Ollama.

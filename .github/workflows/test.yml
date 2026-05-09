@@ -32,11 +32,12 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
-      - name: Pull Phi-4 model
+      - name: Pull Phi-4 model (Small version for CI)
         run: |
-          curl http://localhost:11434/api/pull -d '{"name": "phi4"}'
+          curl http://localhost:11434/api/pull -d '{"name": "phi3:mini"}'
 
       - name: Run tests
         run: uv run pytest
         env:
           OLLAMA_HOST: http://localhost:11434
+          TEST_MODEL: phi3:mini

@@ -6,7 +6,8 @@ from PhiChat import ChatPhi
 
 class TestStreamingLLM(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
-        self.llm = ChatPhi(model="phi4", temperature=0)
+        model = os.getenv("TEST_MODEL", "phi4")
+        self.llm = ChatPhi(model=model, temperature=0)
 
     async def test_astream_text(self):
         chunks = []

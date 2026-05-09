@@ -7,7 +7,8 @@ from langchain_core.tools import tool
 
 class TestMCPMock(unittest.TestCase):
     def setUp(self):
-        self.llm = ChatPhi(model="phi4", temperature=0)
+        model = os.getenv("TEST_MODEL", "phi4")
+        self.llm = ChatPhi(model=model, temperature=0)
 
     def test_async_tool_execution(self):
         @tool

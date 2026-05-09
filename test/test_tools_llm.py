@@ -6,7 +6,8 @@ from PhiChat import ChatPhi, create_tool
 
 class TestToolsLLM(unittest.TestCase):
     def setUp(self):
-        self.llm = ChatPhi(model="phi4", temperature=0)
+        model = os.getenv("TEST_MODEL", "phi4")
+        self.llm = ChatPhi(model=model, temperature=0)
 
     def test_bind_tools_invocation(self):
         def get_current_stock(ticker: str) -> str:
