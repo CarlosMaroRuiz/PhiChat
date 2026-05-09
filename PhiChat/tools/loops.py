@@ -107,6 +107,10 @@ def run_tool_loop(
                     if verbose: print(f"ERROR: {e}")
             
             current_messages.append(ToolMessage(content=str(tool_result), tool_call_id=call_id))
+            
+            # LangChain Standard: If return_direct is True, break loop and return result immediately
+            if selected_tool and getattr(selected_tool, "return_direct", False):
+                return AIMessage(content=str(tool_result))
 
     return AIMessage(content="[Limite de iteraciones alcanzado]")
 
@@ -154,25 +158,35 @@ async def arun_tool_loop(
 
         current_messages.append(response)
 
-        for tc in tool_calls:
-            call_id = tc["id"]
+        import asyncio
+
+        async def _execute_single_tool(tc: dict) -> tuple[dict, Any, BaseTool | None]:
             tool_name = tc["name"]
             call_args = tc["args"]
-            
             selected_tool = tool_map.get(tool_name)
+            
             if not selected_tool:
-                tool_result = f"Error: Tool '{tool_name}' no encontrada."
+                result = f"Error: Tool '{tool_name}' no encontrada."
             else:
                 if verbose:
                     print(f"  -> {tool_name}({call_args})", end="... ", flush=True)
-                
                 try:
-                    tool_result = await selected_tool.ainvoke(call_args)
-                    if verbose: print(f"{tool_result}")
+                    result = await selected_tool.ainvoke(call_args)
+                    if verbose: print(f"{result}")
                 except Exception as e:
-                    tool_result = f"Error en '{tool_name}': {e}"
+                    result = f"Error en '{tool_name}': {e}"
                     if verbose: print(f"ERROR: {e}")
+            return tc, result, selected_tool
+
+        # Ejecución en paralelo real
+        tasks = [_execute_single_tool(tc) for tc in tool_calls]
+        results = await asyncio.gather(*tasks)
+
+        for tc, tool_result, selected_tool in results:
+            current_messages.append(ToolMessage(content=str(tool_result), tool_call_id=tc["id"]))
             
-            current_messages.append(ToolMessage(content=str(tool_result), tool_call_id=call_id))
+            # LangChain Standard: If return_direct is True, break loop and return result immediately
+            if selected_tool and getattr(selected_tool, "return_direct", False):
+                return AIMessage(content=str(tool_result))
 
     return AIMessage(content="[Limite de iteraciones alcanzado]")

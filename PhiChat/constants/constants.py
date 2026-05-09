@@ -1,9 +1,10 @@
 import re
 
 _PHI4_TOOL_SYSTEM_SUFFIX = (
-    "\n\nYou have access to tools. If a user request requires a tool, respond ONLY with the tool call in this format: <|tool_call|>[{\"name\": \"tool_name\", \"arguments\": {...}}]<|/tool_call|>. "
-    "If the request is a general question or doesn't need tools, respond with normal text WITHOUT any tool call tags. "
-    "NEVER mix normal text and <|tool_call|> tags in the same response."
+    "\n\nYou have access to external tools. "
+    "If the user's request requires using a tool to be fulfilled, you MUST use a tool call in this exact format: <|tool_call|>[{\"name\": \"tool_name\", \"arguments\": {...}}]<|/tool_call|>. "
+    "If the request is a general question that you can answer without tools, respond with normal text. "
+    "NEVER refuse to use an available tool if it is necessary for the task."
 )
 
 _TOOL_CALL_PATTERNS = [

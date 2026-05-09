@@ -1,7 +1,7 @@
 """
 PhiChat
 -------
-Wrapper LangChain para Phi-4-mini via Ollama con soporte robusto de tool calling.
+Wrapper LangChain para modelos de la familia Phi-4 via Ollama con soporte robusto de tool calling.
 """
 
 from PhiChat.models import ChatPhi

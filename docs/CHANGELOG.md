@@ -1,5 +1,22 @@
 # Historial de Cambios (Changelog) — PhiChat
 
+## [0.3.0] - 2026-05-09
+### Añadido
+- **Ejecución Paralela de Herramientas**: `arun_tool_loop` ahora usa `asyncio.gather()` para ejecutar múltiples llamadas a herramientas simultáneamente, reduciendo drásticamente la latencia en flujos agénticos asíncronos.
+- **Soporte `return_direct`**: Las herramientas configuradas con `return_direct=True` ahora interrumpen el bucle correctamente y devuelven su resultado crudo de forma inmediata (Estándar LangChain).
+
+### Corregido
+- **NameError en Parsers**: Solucionado un bug silencioso donde fallaba la importación de `re` durante el rescate de JSON.
+
+## [0.2.6] - 2026-05-09
+### Cambiado
+- **Arquitectura de Prompt**: El System Suffix base (`_PHI4_TOOL_SYSTEM_SUFFIX`) ahora es completamente genérico y agnóstico al dominio. Se eliminó la referencia "hardcodeada" a "Terminal Assistant" para que la librería pueda ser usada en cualquier tipo de proyecto (web, agentes, asistentes de servicio, etc.), delegando la personalidad al prompt principal del proyecto.
+
+## [0.2.5] - 2026-05-09
+### Añadido
+- **Persona de Agente Reforzada**: Se ha endurecido el System Prompt para evitar que el modelo caiga en "modo chat" y se niegue a usar herramientas alegando ser una IA estándar de Microsoft.
+- **Prohibición de Refusal**: El modelo ahora tiene instrucciones explícitas de que **ÉL ES** la interfaz del sistema y debe usar herramientas para acciones técnicas.
+
 ## [0.2.4] - 2026-05-09
 ### Añadido
 - **Optimización de Memoria en CI**: Los tests en GitHub Actions ahora usan `phi3:mini` para evitar errores de RAM (OOM), asegurando que el pipeline siempre esté en verde.
