@@ -1,5 +1,10 @@
 # Historial de Cambios (Changelog) — PhiChat
 
+## [0.2.2] - 2026-05-09
+### Añadido
+- **CI/CD con GitHub Actions**: Implementación de tests automáticos en cada push usando contenedores de Ollama.
+- **Flujo de Publicación**: Automatización de subidas a PyPI mediante Trusted Publishing.
+
 ## [0.2.1] - 2026-05-09
 ### Añadido
 - **Suavizado de Prompt**: Ajuste en `constants.py` para permitir respuestas de texto natural en preguntas generales, evitando que el modelo alucine herramientas cuando no son necesarias.
