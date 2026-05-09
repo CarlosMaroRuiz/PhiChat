@@ -34,9 +34,7 @@ jobs:
 
       - name: Pull Phi-4 model
         run: |
-          curl http://localhost:11434/api/pull -d '{"name": "phi4-mini"}'
-          # Esperar a que el modelo esté listo si es necesario, 
-          # aunque el comando anterior es síncrono para el pull.
+          curl http://localhost:11434/api/pull -d '{"name": "phi4"}'
 
       - name: Run tests
         run: uv run pytest
