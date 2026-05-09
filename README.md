@@ -112,6 +112,12 @@ uv run pytest
 uv run pytest test/test_parsers.py
 ```
 
+## Proyectos que usan PhiChat
+
+Descubre cómo otros desarrolladores están integrando `PhiChat` en sus arquitecturas:
+
+*   [Terminal Phi](https://github.com/CarlosMaroRuiz/terminal_phi): Un asistente de terminal autónomo que utiliza Phi-4 para la gestión de archivos y ejecución segura de comandos en Windows (Human-In-The-Loop).
+
 ## Desarrollo con Skills (Phi Protocol)
 
 Este proyecto utiliza un sistema de **Skills** para estandarizar la ingeniería de software. Puedes encontrar la guía completa de operación en [skills/SKILL.md](skills/SKILL.md).
